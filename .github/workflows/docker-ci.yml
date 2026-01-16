@@ -1,4 +1,4 @@
-name: Docker CI
+name: Docker CI/CD
 
 on:
   push:
@@ -6,12 +6,23 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Build Docker image
         run: docker build -t static-html-app .
+
+      - name: Run Docker container
+        run: |
+          # Stop existing container if running
+          if [ $(docker ps -q -f name=static-html-app) ]; then
+            docker stop static-html-app
+            docker rm static-html-app
+          fi
+
+          # Run new container
+          docker run -d --name static-html-app -p 8092:80 static-html-app
